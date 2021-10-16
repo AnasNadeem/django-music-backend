@@ -1,4 +1,7 @@
-from django.http import HttpResponse
+from rest_framework import generics
+from music_room_app.serializers import RoomSerializer
+from music_room_app.models import Room
 # Create your views here.
-def home(request):
-  return HttpResponse('Hello')
+class RoomView(generics.CreateAPIView):
+  queryset = Room.objects.all()
+  serializer_class = RoomSerializer

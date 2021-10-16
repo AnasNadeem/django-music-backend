@@ -1,5 +1,6 @@
 from django.urls import path
-from music_room_app.views import home
+from music_room_app.views import RoomView
+
 urlpatterns = [
-  path('', home, name='home')
+  path('', RoomView.as_view(), name='home')
 ]
