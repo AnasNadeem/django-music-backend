@@ -5,10 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import JsonResponse
 # Create your views here.
-class RoomView(generics.CreateAPIView):
-  queryset = Room.objects.all()
-  serializer_class = RoomSerializer
-
 class RoomListView(generics.ListAPIView):
   queryset = Room.objects.all()
   serializer_class = RoomSerializer
