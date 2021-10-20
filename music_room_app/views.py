@@ -3,7 +3,7 @@ from music_room_app.serializers import RoomSerializer, CreateRoomSerializer
 from music_room_app.models import Room
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from django.http import JsonResponse
 # Create your views here.
 class RoomView(generics.CreateAPIView):
   queryset = Room.objects.all()
@@ -41,7 +41,7 @@ class JoinRoom(APIView):
     if code!=None:
       room_res = Room.objects.filter(code=code)
       if len(room_res)>0:
-        room = room_res[0]
+        # room = room_res[0]
         self.request.session['room_code'] = code
         return Response({"msg":"Room Joined"}, status=status.HTTP_200_OK)
 
@@ -77,3 +77,14 @@ class CreateRoomView(APIView):
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
       return Response({'error':'Bad Request'}, status = status.HTTP_400_BAD_REQUEST)
+
+class UserInRoom(APIView):
+  def get(self, request, format=None):
+    if not self.request.session.exists(self.request.session.session_key):
+      self.request.session.create()
+
+    data = {
+      'code': self.request.session.get('room_code')
+    }
+
+    return JsonResponse(data, status=status.HTTP_200_OK)
