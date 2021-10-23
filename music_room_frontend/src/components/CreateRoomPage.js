@@ -1,9 +1,10 @@
 import React , { Component } from "react";
 import { render } from "react-dom";
-import { Alert, Button, Collapse, Grid, Typography, TextField, FormHelperText, FormControl, FormControlLabel, Radio, RadioGroup } from "@material-ui/core";
+import { Button, Collapse, Grid, Typography, TextField, FormHelperText, FormControl, FormControlLabel, Radio, RadioGroup } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import Alert from "@material-ui/lab/Alert";
 
-class CreateRoomPage extends Component{
+export default class CreateRoomPage extends Component{
   static defaultProps = {
     votesToSkip: 2,
     guestCanPause: true,
@@ -23,8 +24,6 @@ class CreateRoomPage extends Component{
     this.handleRoomBtnPress = this.handleRoomBtnPress.bind(this);
     this.handleVotesChange = this.handleVotesChange.bind(this);
     this.handleGuestCanPauseChange = this.handleGuestCanPauseChange.bind(this);
-    // this.renderCreateButtons = this.renderCreateButtons.bind(this);
-    // this.renderUpdateButtons = this.renderUpdateButtons.bind(this);
     this.handleUpdateRoomBtnPress = this.handleUpdateRoomBtnPress.bind(this);
   }
 
@@ -77,22 +76,24 @@ class CreateRoomPage extends Component{
   }
 
   renderCreateButtons(){
-    render(
-      <Grid container>
+    return(
+      <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Button color="primary" variant="contained" onClick={this.handleRoomBtnPress} >
             Create a Room 
           </Button>
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color="secondary" variant="contained" to="/" component={Link}> Back </Button>
+          <Button color="secondary" variant="contained" to="/" component={Link}>
+           Back
+          </Button>
         </Grid>
       </Grid>
     );
   }
 
   renderUpdateButtons(){
-    render(
+    return(
         <Grid item xs={12} align="center">
           <Button color="primary" variant="contained" onClick={this.handleUpdateRoomBtnPress} >
             Update Room 
@@ -108,7 +109,19 @@ class CreateRoomPage extends Component{
       <Grid container spacing={1}>
         <Grid item xs={12} align="center">
           <Collapse in={ this.state.errorMsg != "" || this.state.successMsg != "" } >
-            {this.state.errorMsg != "" ? this.state.errorMsg : this.state.successMsg }
+            {this.state.errorMsg != "" ? (
+              <Alert severity="error" onClose={() => {
+                this.setState({errorMsg:""})
+              }}>
+                {this.state.errorMsg}
+              </Alert>
+            ) : (
+              <Alert severity="success" onClose={() => {
+                this.setState({successMsg:""})
+              }}>
+                {this.state.successMsg}
+              </Alert>
+            ) }
           </Collapse>
         </Grid>
         <Grid item xs={12} align="center">
@@ -140,5 +153,3 @@ class CreateRoomPage extends Component{
     );
   }
 }
-
-export default CreateRoomPage;
