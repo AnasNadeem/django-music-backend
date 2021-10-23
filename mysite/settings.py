@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'music_room_app',
     'music_room_frontend',
+    'spotify',
 ]
 
 MIDDLEWARE = [
