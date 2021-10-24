@@ -6,13 +6,15 @@ from rest_framework.response import Response
 from spotify.utils import (
   update_or_create_user_tokens,
   is_spotify_authenticated, 
-  execute_spotify_api_request)
+  execute_spotify_api_request,
+  play_song,
+  pause_song)
 from django.shortcuts import redirect
 from music_room_app.models import Room
 
 # Create your views here.
-client_id = os.environ['CLIENT_ID']
-client_secret = os.environ['CLIENT_SECRET']
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
 REDIRECT_URI = "https://4f9b8679-494e-40ee-bb6a-bb0c84d4e1ca.id.repl.co/spotify/redirect"
 
 class AuthURL(APIView):
@@ -23,7 +25,7 @@ class AuthURL(APIView):
       'scope':scopes,
       'response_type':'code',
       'redirect_uri': REDIRECT_URI,
-      'client_id': client_id
+      'client_id': CLIENT_ID
     }).prepare().url
     return Response({'url':url}, status=status.HTTP_200_OK)
 
@@ -35,8 +37,8 @@ def spotify_callback(request, format=None):
     'grant_type':'authorization_code',
     'code':code,
     'redirect_uri':REDIRECT_URI,
-    'client_id':client_id,
-    'client_secret':client_secret
+    'client_id':CLIENT_ID,
+    'client_secret':CLIENT_SECRET
   }).json()
 
   access_token = response.get('access_token')
@@ -68,6 +70,54 @@ class CurrentSong(APIView):
     host = room.host
     endpoint = "player/currently-playing"
     response = execute_spotify_api_request(host, endpoint)
-    print(response)
-    return Response(response, status=status.HTTP_200_OK)
 
+    if 'error' in response or 'item' not in response:
+      return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+    item = response.get('item')
+    duration = item.get('duration_ms')
+    progress = response.get('progress_ms')
+    album_cover = item.get('album').get('images')[0].get('url')
+    is_playing = response.get('is_playing')
+    song_id = item.get('id')
+
+    artist_string = ""
+    for i, artist in enumerate(item.get('artists')):
+      if i>0:
+        artist_string+=", "
+      name = artist.get('name')
+      artist_string+=name
+    
+    song = {
+      'title':item.get('name'),
+      'artist':artist_string,
+      'duration':duration,
+      'time':progress,
+      'image_url':album_cover,
+      'is_playing':is_playing,
+      'votes':0,
+      'id':song_id
+    }
+
+    return Response(song, status=status.HTTP_200_OK)
+
+class PauseSong(APIView):
+  def put(self, response, format=None):
+    room_code = self.request.session.get('room_code')
+    room = Room.objects.filter(code=room_code)[0]
+    if self.request.session.session_key == room.host or room.guest_can_pause:
+      play_song(room.host)
+      return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+    return Response({}, status=status.HTTP_403_FORBIDDEN)
+
+
+class PlaySong(APIView):
+  def put(self, response, format=None):
+    room_code = self.request.session.get('room_code')
+    room = Room.objects.filter(code=room_code)[0]
+    if self.request.session.session_key == room.host or room.guest_can_pause:
+      pause_song(room.host)
+      return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+    return Response({}, status=status.HTTP_403_FORBIDDEN)

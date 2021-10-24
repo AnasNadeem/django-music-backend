@@ -1,7 +1,7 @@
 import React , { Component } from 'react';
 import { Grid, Button, Typography } from "@material-ui/core";
 import CreateRoomPage from "./CreateRoomPage";
-
+import MusicPlayer from "./MusicPlayer";
 export default class Room extends Component{
   constructor(props){
     super(props);
@@ -10,7 +10,8 @@ export default class Room extends Component{
       guestCanPause:4,
       isHost:false,
       showSettings:false,
-      spotifyAuthenticated:false
+      spotifyAuthenticated:false,
+      song:{}
     };
     this.roomCode = this.props.match.params.roomCode;
     this.leaveButtonPressed= this.leaveButtonPressed.bind(this);
@@ -18,7 +19,16 @@ export default class Room extends Component{
     this.renderSettings = this.renderSettings.bind(this);
     this.renderSettingsButton = this.renderSettingsButton.bind(this);
     this.authenticateSpotify = this.authenticateSpotify.bind(this);
+    this.getCurrentSong = this.getCurrentSong.bind(this);
     this.getRoomDetails();
+  }
+
+  componentDidMount(){
+    this.interval = setInterval(this.getCurrentSong, 1000);
+  }
+
+  componentWillUnmount(){
+    clearInterval(this.interval);
   }
 
   getRoomDetails(){
@@ -42,14 +52,24 @@ export default class Room extends Component{
   authenticateSpotify(){
     fetch('/spotify/is-authen').then((response) => response.json()).then((data) => {
       this.setState({spotifyAuthenticated:data.status});
-      console.log(data.status);
-      console.log(data);
       if(!data.status){
         fetch('/spotify/get-auth-url').then((response) => response.json()).then((data) => {
           window.location.replace(data.url);
         });
       }
     });
+  }
+
+  getCurrentSong(){
+    fetch('/spotify/current-song').then((response) => {
+      if(!response.ok){
+        return {};
+      }else{
+        return response.json()
+      }
+    }).then((data) => {
+      this.setState({song:data});
+      })
   }
 
   leaveButtonPressed(){
@@ -105,21 +125,7 @@ export default class Room extends Component{
             Room Code {this.roomCode}
           </Typography>
         </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h3" compact="h5">
-            Votes to skip {this.state.votesToSkip}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h3" compact="h5">
-            Guest can pause {this.state.guestCanPause.toString()}
-          </Typography>
-        </Grid>
-        <Grid item xs={12} align="center">
-          <Typography variant="h3" compact="h5">
-            Host {this.state.isHost.toString()}
-          </Typography>
-        </Grid>
+        <MusicPlayer {...this.state.song} />
         {this.state.isHost ? this.renderSettingsButton() : null }
         <Grid item xs={12} align="center">
           <Button color="secondary" variant="contained" onClick={this.leaveButtonPressed}>
