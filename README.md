@@ -27,7 +27,7 @@ You must have **Python** installed on your system.
   For **_Windows_** users:
   
   ```
-  py -m venv env && .\env\source\activate
+  py -m venv env && .\env\scripts\activate
   ```
 
 4. Install the dependencies from the **_rqrm.txt_**
