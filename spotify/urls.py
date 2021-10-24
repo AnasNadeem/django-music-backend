@@ -1,7 +1,8 @@
 from django.urls import path  
-from spotify.views import AuthURL, spotify_callback, IsAuthenticated
+from spotify.views import AuthURL, spotify_callback, IsAuthenticated,CurrentSong
 urlpatterns = [
   path('get-auth-url', AuthURL.as_view()),
   path('redirect', spotify_callback),
   path('is-authen', IsAuthenticated.as_view()),
+  path('current-song', CurrentSong.as_view()),
 ]

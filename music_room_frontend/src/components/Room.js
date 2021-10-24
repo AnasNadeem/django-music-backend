@@ -41,15 +41,15 @@ export default class Room extends Component{
 
   authenticateSpotify(){
     fetch('/spotify/is-authen').then((response) => response.json()).then((data) => {
-      this.setState({
-        spotifyAuthenticated:data.status
-      });
+      this.setState({spotifyAuthenticated:data.status});
+      console.log(data.status);
+      console.log(data);
       if(!data.status){
         fetch('/spotify/get-auth-url').then((response) => response.json()).then((data) => {
           window.location.replace(data.url);
-        })
+        });
       }
-    })
+    });
   }
 
   leaveButtonPressed(){
